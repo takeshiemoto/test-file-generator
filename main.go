@@ -12,7 +12,7 @@ func main() {
 	//fmt.Println(config.Config.LogFile)
 	//
 	//log.Println("test")
-	//fmt.Println(models.Db)
+	fmt.Println(models.Db)
 	//
 	//u := &models.User{}
 	//u.Name = "Hiroshi"
@@ -45,14 +45,5 @@ func main() {
 	//for _, v := range todos {
 	//	fmt.Println(v)
 	//}
-
-	t, _ := models.GetTodo(1)
-	t.Content = "Hello world"
-	err := t.UpdateTodo()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	t.DeleteTodo()
 
 }
