@@ -9,35 +9,18 @@ import (
 	"net/http"
 )
 
-func index(w http.ResponseWriter, r *http.Request) {
-	_, err := session(w, r)
-	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-
-		return
+func todoHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		getTodos(w, r)
+	case http.MethodPost:
+		postTodo(w, r)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
-
-	indexDto := dto.IndexDto{Message: "Logged In"}
-
-	j, err := json.Marshal(indexDto)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, string(j))
-
-	return
 }
 
-func todos(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-
-		return
-	}
-
+func getTodos(w http.ResponseWriter, r *http.Request) {
 	s, err := session(w, r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -82,4 +65,48 @@ func todos(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(j))
 
 	return
+}
+
+func postTodo(w http.ResponseWriter, r *http.Request) {
+	s, err := session(w, r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		return
+	}
+
+	body := make([]byte, r.ContentLength)
+	r.Body.Read(body)
+
+	var requestDto dto.TodoCreateRequestDto
+
+	err = json.Unmarshal(body, &requestDto)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+
+	u, err := s.GetUserBySession()
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+
+	err = u.CreateTodo(requestDto.Content)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+
+	return
+}
+
+func updateTodo(w http.ResponseWriter, r *http.Request) {
+
 }

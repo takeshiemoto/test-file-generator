@@ -20,12 +20,11 @@ func session(w http.ResponseWriter, r *http.Request) (session models.Session, er
 }
 
 func StartMainServer() error {
-	http.HandleFunc("/", index)
 	http.HandleFunc("/signup", signup)
 	http.HandleFunc("/signin", signin)
 	http.HandleFunc("/signout", signout)
 
-	http.HandleFunc("/todos", todos)
+	http.HandleFunc("/todos", todoHandler)
 
 	return http.ListenAndServe(":"+config.Config.Port, nil)
 }
