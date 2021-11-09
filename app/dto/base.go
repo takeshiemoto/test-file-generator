@@ -1,5 +1,5 @@
 package dto
 
 type IndexDto struct {
-	Message string
+	Message string `json:"message"`
 }

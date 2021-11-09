@@ -36,6 +36,9 @@ func signup(w http.ResponseWriter, r *http.Request) {
 
 	if err := user.CreateUser(); err != nil {
 		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 }
 
@@ -68,6 +71,9 @@ func signin(w http.ResponseWriter, r *http.Request) {
 		session, err := user.CreateSession()
 		if err != nil {
 			log.Println(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+
+			return
 		}
 
 		cookie := http.Cookie{
@@ -84,7 +90,9 @@ func signin(w http.ResponseWriter, r *http.Request) {
 
 		res, err := json.Marshal(signInResponseDto)
 		if err != nil {
+			log.Println(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+
 			return
 		}
 
@@ -110,6 +118,9 @@ func signout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("_cookie")
 	if err != nil {
 		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 
 	if err != http.ErrNoCookie {
@@ -117,6 +128,9 @@ func signout(w http.ResponseWriter, r *http.Request) {
 		err := session.DeleteSessionByUUID()
 		if err != nil {
 			log.Println(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+
+			return
 		}
 	}
 
