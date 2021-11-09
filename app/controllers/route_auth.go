@@ -11,7 +11,7 @@ import (
 
 func signup(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 
 		return
 	}
@@ -39,9 +39,9 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func authenticate(w http.ResponseWriter, r *http.Request) {
+func signin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 
 		return
 	}
@@ -96,6 +96,29 @@ func authenticate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusUnauthorized)
+
+	return
+}
+
+func signout(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+
+		return
+	}
+
+	cookie, err := r.Cookie("_cookie")
+	if err != nil {
+		log.Println(err)
+	}
+
+	if err != http.ErrNoCookie {
+		session := models.Session{UUID: cookie.Value}
+		err := session.DeleteSessionByUUID()
+		if err != nil {
+			log.Println(err)
+		}
+	}
 
 	return
 }
