@@ -106,7 +106,3 @@ func postTodo(w http.ResponseWriter, r *http.Request) {
 
 	return
 }
-
-func updateTodo(w http.ResponseWriter, r *http.Request) {
-
-}
