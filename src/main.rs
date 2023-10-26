@@ -4,6 +4,9 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
+const MB_BLOCK: usize = 1_048_576; // 1MB
+const GB4: usize = 4_294_967_296; // 4GB
+
 fn random_string(length: usize) -> String {
     const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                              abcdefghijklmnopqrstuvwxyz\
@@ -23,11 +26,9 @@ fn random_string(length: usize) -> String {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
 
-    if args.len() != 2 {
-        if args.len() != 2 {
-            eprintln!("使い方: {} [生成するファイルの個数]", args[0]);
-            std::process::exit(1);
-        }
+    if args.len() < 2 || args.len() > 3 {
+        eprintln!("使い方: {} [生成するファイルの個数] [--large]", args[0]);
+        std::process::exit(1);
     }
 
     let count: usize = match args[1].parse() {
@@ -37,6 +38,9 @@ fn main() {
             std::process::exit(1);
         }
     };
+
+    let large_files = args.contains(&"--large".to_string());
+    let large4gb_files = args.contains(&"--large4gb".to_string());
 
     // output フォルダを作成（既に存在する場合は無視）
     let output_dir = Path::new("output");
@@ -55,11 +59,24 @@ fn main() {
         let path = Path::new(&filename);
         let mut file = File::create(&path).expect("ファイルの作成に失敗しました");
 
-        // 1バイトから20バイトまでのランダムな長さの文字列を生成
-        let content = random_string(rand::thread_rng().gen_range(1..=20));
+        if large4gb_files {
+            let block = random_string(MB_BLOCK);
+            let iterations = GB4 / MB_BLOCK;
 
-        file.write_all(content.as_bytes())
-            .expect("書き込みに失敗しました");
+            for _ in 0..iterations {
+                file.write_all(block.as_bytes())
+                    .expect("書き込みに失敗しました");
+            }
+        } else if large_files {
+            let content = random_string(1_048_576 + rand::thread_rng().gen_range(1..=20));
+            file.write_all(content.as_bytes())
+                .expect("書き込みに失敗しました");
+        } else {
+            let content = random_string(rand::thread_rng().gen_range(1..=20));
+            file.write_all(content.as_bytes())
+                .expect("書き込みに失敗しました");
+        }
+
         println!("{} を生成しました", filename);
     }
 }
